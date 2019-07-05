@@ -6,7 +6,7 @@ module.exports = {
 // This is the name of the action displayed in the editor.
 //---------------------------------------------------------------------
 
-name: "Add Blank Embed Field",
+name: "Control Global Data",
 
 //---------------------------------------------------------------------
 // Action Section
@@ -14,7 +14,7 @@ name: "Add Blank Embed Field",
 // This is the section the action will fall into.
 //---------------------------------------------------------------------
 
-section: "Embed Message",
+section: "Deprecated",
 
 //---------------------------------------------------------------------
 // Action Subtitle
@@ -23,31 +23,28 @@ section: "Embed Message",
 //---------------------------------------------------------------------
 
 subtitle: function(data) {
-	const info = ['.', 'Temp Variable', 'Server Variable', 'Global Variable']
-	return `${info[parseInt(data.storage)]}: ${data.varName}`;
+	return `(${data.dataName}) ${data.changeType === "1" ? "+=" : "="} ${data.value}`;
 },
 
 //---------------------------------------------------------------------
-	 // DBM Mods Manager Variables (Optional but nice to have!)
-	 //
-	 // These are variables that DBM Mods Manager uses to show information
-	 // about the mods for people to see in the list.
-	 //---------------------------------------------------------------------
+// DBM Mods Manager Variables (Optional but nice to have!)
+//
+// These are variables that DBM Mods Manager uses to show information
+// about the mods for people to see in the list.
+//---------------------------------------------------------------------
 
-	 // Who made the mod (If not set, defaults to "DBM Mods")
-	 author: "Aioi",
+// Who made the mod (If not set, defaults to "DBM Mods")
+author: "MrGold",
 
-	 // The version of the mod (Defaults to 1.0.0)
-	 version: "",
+// The version of the mod (Defaults to 1.0.0)
+version: "1.9.5", //Added in 1.9.5
 
-	 // A short description to show on the mod line for this mod (Must be on a single line)
-	 short_description: "Test",
+// A short description to show on the mod line for this mod (Must be on a single line)
+short_description: "Adds/sets value to Globals JSON file",
 
-	 // If it depends on any other mods by name, ex: WrexMODS if the mod uses something from WrexMods
+// If it depends on any other mods by name, ex: WrexMODS if the mod uses something from WrexMods
 
-
-	 //---------------------------------------------------------------------
-
+//---------------------------------------------------------------------
 
 //---------------------------------------------------------------------
 // Action Fields
@@ -57,44 +54,43 @@ subtitle: function(data) {
 // are also the names of the fields stored in the action's JSON data.
 //---------------------------------------------------------------------
 
-fields: ["storage", "varName"],
+fields: ["dataName", "changeType", "value"],
 
 //---------------------------------------------------------------------
 // Command HTML
 //
 // This function returns a string containing the HTML used for
-// editting actions.
+// editting actions. 
 //
 // The "isEvent" parameter will be true if this action is being used
-// for an event. Due to their nature, events lack certain information,
+// for an event. Due to their nature, events lack certain information, 
 // so edit the HTML to reflect this.
 //
-// The "data" parameter stores constants for select elements to use.
+// The "data" parameter stores constants for select elements to use. 
 // Each is an array: index 0 for commands, index 1 for events.
-// The names are: sendTargets, members, roles, channels,
+// The names are: sendTargets, members, roles, channels, 
 //                messages, servers, variables
 //---------------------------------------------------------------------
 
 html: function(isEvent, data) {
 	return `
-<div>
-	<div>
-			<p>
-				<u>Mod Info:</u><br>
-				Created by Aioi
-			</p>
-		</div><br>
-	<div style="float: left; width: 35%;">
-		Source Embed Object:<br>
-		<select id="storage" class="round" onchange="glob.refreshVariableList(this)">
-			${data.variables[1]}
+<div style="padding-top: 8px;">
+	<div style="float: left; width: 50%;">
+		Data Name:<br>
+		<input id="dataName" class="round" type="text">
+	</div>
+	<div style="float: left; width: 45%;">
+		Control Type:<br>
+		<select id="changeType" class="round">
+			<option value="0" selected>Set Value</option>
+			<option value="1">Add Value</option>
 		</select>
 	</div>
-	<div id="varNameContainer" style="float: right; width: 60%;">
-		Variable Name:<br>
-		<input id="varName" class="round varSearcher" type="text" list="variableList"><br>
-	</div>
-</div><br><br><br>`
+</div><br><br><br>
+<div style="padding-top: 8px;">
+	Value:<br>
+	<input id="value" class="round" type="text" name="is-eval"><br>
+</div>`
 },
 
 //---------------------------------------------------------------------
@@ -105,25 +101,55 @@ html: function(isEvent, data) {
 // functions for the DOM elements.
 //---------------------------------------------------------------------
 
-init: function() {
-},
+init: function() {},
 
 //---------------------------------------------------------------------
 // Action Bot Function
 //
 // This is the function for the action within the Bot's Action class.
-// Keep in mind event calls won't have access to the "msg" parameter,
+// Keep in mind event calls won't have access to the "msg" parameter, 
 // so be sure to provide checks for variable existance.
 //---------------------------------------------------------------------
 
 action: function(cache) {
 	const data = cache.actions[cache.index];
-	const storage = parseInt(data.storage);
-	const varName = this.evalMessage(data.varName, cache);
-	const embed = this.getVariable(storage, varName, cache);
-	if(embed && embed.addBlankField) {
-		embed.addBlankField();
+
+	const dataName = this.evalMessage(data.dataName, cache);
+	const isAdd = Boolean(data.changeType === "1");
+	let val = this.evalMessage(data.value, cache);
+	try {
+		val = this.eval(val, cache);
+	} catch(e) {
+		this.displayError(data, cache, e);
 	}
+
+	const fs = require("fs");
+	const path = require("path");
+
+	const filePath = path.join(process.cwd(), "data", "globals.json");
+
+	if(!fs.existsSync(filePath)) {
+		fs.writeFileSync(filePath, "{}")
+	}
+
+	const obj = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+
+	if(dataName && val) {
+		if(isAdd) {
+			if(!obj[dataName]) {
+				obj[dataName] = val;
+			} else {
+			obj[dataName] += val;
+			}
+		} else {
+			obj[dataName] = val;
+		}
+		fs.writeFileSync(filePath, JSON.stringify(obj));
+	} else if (dataName && !val) {
+		delete obj[dataName];
+		fs.writeFileSync(filePath, JSON.stringify(obj));
+	}
+
 	this.callNextAction(cache);
 },
 

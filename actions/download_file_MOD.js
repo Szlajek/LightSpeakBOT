@@ -6,7 +6,7 @@ module.exports = {
 // This is the name of the action displayed in the editor.
 //---------------------------------------------------------------------
 
-name: "Pobierz plik",
+name: "Download File",
 
 //---------------------------------------------------------------------
 // Action Section
@@ -14,7 +14,7 @@ name: "Pobierz plik",
 // This is the section the action will fall into.
 //---------------------------------------------------------------------
 
-section: "Pliki",
+section: "File Stuff",
 
 //---------------------------------------------------------------------
 // Action Subtitle
@@ -83,27 +83,27 @@ html: function(isEvent, data) {
     </p>
 </div><br>
 <div style="float: left;">
-	URL Strony:<br>
+	Web URL:<br>
 	<input id="url" class="round" type="text" style="width: 522px" oninput="glob.onInput1(this)"><br>
 </div><br><br><br>
 <div style="float: left;">
   <div style="float: left; width: 60%;">
-	Nazwa pliku:<br>
+	File Name:<br>
 	<input id="fileName" class="round" type="text" style="width: 400px"><br>
   </div>
   <div style="float: left; width: 35%; padding-left: 100px;">
-  Format pliku:<br>
+  File Format:<br>
 	<input id="fileFormat" class="round" type="text" style="width: 100px"><br>
   </div>
 </div><br><br><br><br>
 <div style="float: left;">
-	Ścieżka pliku:<br>
+	File Path:<br>
 	<input id="filePath" class="round" type="text" style="width: 522px" value="./downloads"><br>
 </div><br><br><br><br>
 <p>
-  <u><b><span style="color: white;">Uwaga:</span></b></u><br>
-  W "Ścieżka pliku", "./" reprezentuje ścieżkę do twojego folderu bota<br>
-  Nazwa pliku i format pliku są automatyczne, ale można je zmienić
+  <u><b><span style="color: white;">NOTE:</span></b></u><br>
+  In File Path, "./" represents the path to your bot folder<br>
+  File Name and File Format are automatic but you can change them
 </p>
 `
 },

@@ -6,7 +6,7 @@ module.exports = {
 // This is the name of the action displayed in the editor.
 //---------------------------------------------------------------------
 
-name: "Add Blank Embed Field",
+name: "Get Dominant Color",
 
 //---------------------------------------------------------------------
 // Action Section
@@ -14,7 +14,7 @@ name: "Add Blank Embed Field",
 // This is the section the action will fall into.
 //---------------------------------------------------------------------
 
-section: "Embed Message",
+section: "Image Editing",
 
 //---------------------------------------------------------------------
 // Action Subtitle
@@ -23,31 +23,21 @@ section: "Embed Message",
 //---------------------------------------------------------------------
 
 subtitle: function(data) {
-	const info = ['.', 'Temp Variable', 'Server Variable', 'Global Variable']
-	return `${info[parseInt(data.storage)]}: ${data.varName}`;
+	const info = ['Image URL'];
+	return `Get dominant color from URL`;
 },
 
 //---------------------------------------------------------------------
-	 // DBM Mods Manager Variables (Optional but nice to have!)
-	 //
-	 // These are variables that DBM Mods Manager uses to show information
-	 // about the mods for people to see in the list.
-	 //---------------------------------------------------------------------
+// Action Storage Function
+//
+// Stores the relevant variable info for the editor.
+//---------------------------------------------------------------------
 
-	 // Who made the mod (If not set, defaults to "DBM Mods")
-	 author: "Aioi",
-
-	 // The version of the mod (Defaults to 1.0.0)
-	 version: "",
-
-	 // A short description to show on the mod line for this mod (Must be on a single line)
-	 short_description: "Test",
-
-	 // If it depends on any other mods by name, ex: WrexMODS if the mod uses something from WrexMods
-
-
-	 //---------------------------------------------------------------------
-
+variableStorage: function(data, varType) {
+	const type = parseInt(data.storage);
+	if(type !== varType) return;
+	return ([data.varName, 'String']);
+},
 
 //---------------------------------------------------------------------
 // Action Fields
@@ -57,44 +47,50 @@ subtitle: function(data) {
 // are also the names of the fields stored in the action's JSON data.
 //---------------------------------------------------------------------
 
-fields: ["storage", "varName"],
+fields: ["info", "find", "storage", "varName"],
 
 //---------------------------------------------------------------------
 // Command HTML
 //
 // This function returns a string containing the HTML used for
-// editting actions.
+// editting actions. 
 //
 // The "isEvent" parameter will be true if this action is being used
-// for an event. Due to their nature, events lack certain information,
+// for an event. Due to their nature, events lack certain information, 
 // so edit the HTML to reflect this.
 //
-// The "data" parameter stores constants for select elements to use.
+// The "data" parameter stores constants for select elements to use. 
 // Each is an array: index 0 for commands, index 1 for events.
-// The names are: sendTargets, members, roles, channels,
+// The names are: sendTargets, members, roles, channels, 
 //                messages, servers, variables
 //---------------------------------------------------------------------
 
 html: function(isEvent, data) {
 	return `
 <div>
-	<div>
-			<p>
-				<u>Mod Info:</u><br>
-				Created by Aioi
-			</p>
-		</div><br>
+	<div style="float: left; width: 40%;">
+		Source Field:<br>
+		<select id="info" class="round">
+			<option value="0" selected>Image URL</option>
+		</select>
+	</div>
+	<div style="float: right; width: 55%;">
+		Search Value:<br>
+		<input id="find" class="round" type="text">
+	</div>
+</div><br><br><br>
+<div style="padding-top: 8px;">
 	<div style="float: left; width: 35%;">
-		Source Embed Object:<br>
-		<select id="storage" class="round" onchange="glob.refreshVariableList(this)">
+		Store In:<br>
+		<select id="storage" class="round">
 			${data.variables[1]}
 		</select>
 	</div>
 	<div id="varNameContainer" style="float: right; width: 60%;">
 		Variable Name:<br>
-		<input id="varName" class="round varSearcher" type="text" list="variableList"><br>
+		<input id="varName" class="round" type="text">
 	</div>
-</div><br><br><br>`
+</div>`
 },
 
 //---------------------------------------------------------------------
@@ -112,17 +108,33 @@ init: function() {
 // Action Bot Function
 //
 // This is the function for the action within the Bot's Action class.
-// Keep in mind event calls won't have access to the "msg" parameter,
+// Keep in mind event calls won't have access to the "msg" parameter, 
 // so be sure to provide checks for variable existance.
 //---------------------------------------------------------------------
 
-action: function(cache) {
+action: async function(cache) {
+	const { getColorFromURL } = require('color-thief-node'), rgbToHex = require("rgb-hex");
 	const data = cache.actions[cache.index];
-	const storage = parseInt(data.storage);
-	const varName = this.evalMessage(data.varName, cache);
-	const embed = this.getVariable(storage, varName, cache);
-	if(embed && embed.addBlankField) {
-		embed.addBlankField();
+	const bot = this.getDBM().Bot.bot;
+	const info = parseInt(data.info);
+	const url = this.evalMessage(data.find, cache);
+	let result;
+	switch(info) {
+		case 0:
+			try {
+				let RGB = await getColorFromURL(url);
+				result = `#${rgbToHex(RGB.join(", "))}`;
+			} catch (error) {
+				result = undefined;
+			}
+			break;
+		default:
+			break;
+	}
+	if (result !== undefined) {
+		const storage = parseInt(data.storage);
+		const varName = this.evalMessage(data.varName, cache);
+		this.storeValue(result, storage, varName, cache);
 	}
 	this.callNextAction(cache);
 },

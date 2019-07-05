@@ -6,7 +6,7 @@ module.exports = {
 // This is the name of the action displayed in the editor.
 //---------------------------------------------------------------------
 
-name: "Konwertuj YouTube Timestamp",
+name: "Convert Youtube Timestamp",
 
 //---------------------------------------------------------------------
 // Action Section
@@ -14,7 +14,7 @@ name: "Konwertuj YouTube Timestamp",
 // This is the section the action will fall into.
 //---------------------------------------------------------------------
 
-section: "Muzyka",
+section: "Audio Control",
 
 //---------------------------------------------------------------------
 // Action Subtitle
@@ -71,18 +71,18 @@ html: function(isEvent, data) {
 </div><br>
 </div>
 	<div style="width: 40%">
-		Czas YouTube:<br>
+		Youtube Duration:<br>
 		<input placeholder="PT15M51S" id="inputvalue" class="round" type="text">
 	</div><br>
 	<div>
 		<div style="float: left; width: 35%;">
-			Zapisz w:<br>
+			Store In:<br>
 			<select id="storage" class="round">
 				${data.variables[1]}
 			</select>
 		</div>
 		<div id="varNameContainer" style="float: right; width: 60%;">
-			Nazwa zmiennej:<br>
+			Variable Name:<br>
 			<input id="varName" class="round" type="text">
 		</div>`
 },

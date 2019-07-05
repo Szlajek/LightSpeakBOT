@@ -6,7 +6,7 @@ module.exports = {
 // This is the name of the action displayed in the editor.
 //---------------------------------------------------------------------
 
-name: "Komenda ustawiania gry",
+name: "Gameset Command",
 
 //---------------------------------------------------------------------
 // Action Section
@@ -14,7 +14,7 @@ name: "Komenda ustawiania gry",
 // This is the section the action will fall into.
 //---------------------------------------------------------------------
 
-section: "Szybkie komendy",
+section: "Quick Commands",
 
 //---------------------------------------------------------------------
 // Action Subtitle
@@ -79,7 +79,7 @@ html: function(isEvent, data) {
 		<p>
 			<u>Mod Info:</u><br>
 			Created by _iTrqPss<br>
-			Pojedyńcza akcjo-komenda która ustawi grę bota na: {p}help | {count} Serwerów!
+			Single action command that will set the bots presence to {p}help | {count} Servers!
 		</p>
 </div>`
 },
@@ -106,7 +106,7 @@ init: function() {
 
 action: function(cache) {
 	const botClient = this.getDBM().Bot.bot;
-    botClient.user.setActivity(this.getDBM().Files.data.settings.tag + 'help | ' + botClient.guilds.array().length + ' Serwerów', { type: "PLAYING",});
+    botClient.user.setActivity(this.getDBM().Files.data.settings.tag + 'help | ' + botClient.guilds.array().length + ' Servers', { type: "PLAYING",});
 },
 
 //---------------------------------------------------------------------
